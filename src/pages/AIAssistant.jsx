@@ -289,10 +289,7 @@ Answer the user's query intelligently. Use markdown formatting like bolding and 
       setMessages((prev) => [...prev, { role: 'assistant', content: reply }])
     } catch (error) {
       console.error('Gemini API Error:', error)
-      let fallbackMsg = ''
-      if (error.message === 'API_KEY_MISSING' || error.message.includes('API key not valid')) {
-        fallbackMsg = `**⚠️ AI is running in Offline Mode**\n\nYour Gemini API key is missing or invalid. Please click the ⚙️ icon above to enter your API key for full AI functionality.\n\n*Falling back to offline data...*\n\n`
-      }
+      const fallbackMsg = `**⚠️ AI is running in Offline Mode**\n\nThe Gemini AI failed to respond (Error: ${error.message || 'Unknown'}). If your API key is invalid, click the ⚙️ Settings icon to update it.\n\n*Falling back to offline data...*\n\n`
       // Fallback to local offline engine if API fails
       const offlineReply = fallbackMsg + buildAIResponse(msg, db)
       setMessages((prev) => [
