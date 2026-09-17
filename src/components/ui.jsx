@@ -713,7 +713,7 @@ export function MiniBar({ data, labels, color = 'var(--gold)', height = 80 }) {
               style={{
                 flex: 1,
                 textAlign: 'center',
-                fontSize: 9,
+                fontSize: 11,
                 color: 'var(--text-muted)',
               }}
             >

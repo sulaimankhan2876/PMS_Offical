@@ -12,12 +12,12 @@ const NAV_SECTIONS = [
   {
     label: 'Academics',
     items: [
-      { id: 'students', icon: '◎', label: 'Students' },
+      { id: 'students', icon: '👥', label: 'Students' },
       { id: 'teachers', icon: '◈', label: 'Teachers' },
       { id: 'classes', icon: '⬡', label: 'Classes & Sections' },
       { id: 'subjects', icon: '◧', label: 'Subjects' },
       { id: 'timetable', icon: '⊟', label: 'Timetable' },
-      { id: 'attendance', icon: '◉', label: 'Attendance' },
+      { id: 'attendance', icon: '☑️', label: 'Attendance' },
     ],
   },
   {
@@ -259,12 +259,12 @@ export default function Sidebar({ page, setPage }) {
             <div key={section.label} style={{ marginBottom: 4 }}>
               <div
                 style={{
-                  fontSize: 9,
-                  fontWeight: 700,
+                  fontSize: 11,
+                  fontWeight: 800,
                   textTransform: 'uppercase',
-                  letterSpacing: '1.5px',
-                  color: 'var(--text-muted)',
-                  padding: '10px 20px 4px',
+                  letterSpacing: '1.2px',
+                  color: 'var(--gold)',
+                  padding: '12px 20px 6px',
                 }}
               >
                 {section.label}

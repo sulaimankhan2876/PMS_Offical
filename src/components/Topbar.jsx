@@ -37,6 +37,7 @@ export default function Topbar({ page, setPage, onMenuClick }) {
   const { currentRole, currentUser, onlinePayments, feeRecords, logout } =
     useDb()
   const [showNotifications, setShowNotifications] = useState(false)
+  const [showProfileMenu, setShowProfileMenu] = useState(false)
   const now = new Date()
   const dateStr = now.toLocaleDateString('en-PK', {
     weekday: 'long',
@@ -81,7 +82,7 @@ export default function Topbar({ page, setPage, onMenuClick }) {
         zIndex: 999,
       }}
     >
-      <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+      <div style={{ display: 'flex', alignItems: 'baseline', gap: 16 }}>
         <button
           className="hide-on-laptop"
           onClick={onMenuClick}
@@ -91,6 +92,7 @@ export default function Topbar({ page, setPage, onMenuClick }) {
             color: 'var(--gold)',
             fontSize: '20px',
             cursor: 'pointer',
+            lineHeight: 1,
           }}
         >
           ☰
@@ -102,17 +104,19 @@ export default function Topbar({ page, setPage, onMenuClick }) {
             fontWeight: 600,
             color: 'var(--gold)',
             letterSpacing: 0.3,
+            lineHeight: 1,
+            margin: 0,
           }}
           className="hide-on-mobile"
         >
           {PAGE_TITLES[page] || 'Dashboard'}
         </h1>
         <div
-          style={{ width: 1, height: 20, background: 'var(--border)' }}
+          style={{ width: 1, height: 16, background: 'var(--border)', alignSelf: 'center' }}
           className="hide-on-mobile"
         />
         <span
-          style={{ fontSize: 11, color: 'var(--text-muted)' }}
+          style={{ fontSize: 12, color: 'var(--text-muted)', lineHeight: 1 }}
           className="hide-on-mobile"
         >
           {dateStr}
@@ -249,12 +253,15 @@ export default function Topbar({ page, setPage, onMenuClick }) {
             borderRadius: 'var(--radius-sm)',
             border: '1px solid var(--border)',
             background: 'rgba(234,179,8,0.04)',
+            cursor: 'pointer',
+            position: 'relative',
           }}
+          onClick={() => setShowProfileMenu(!showProfileMenu)}
         >
           <Avatar
             name={currentUser?.name || currentRole}
             size={28}
-            fontSize={10}
+            fontSize={12}
           />
           <div className="hide-on-mobile">
             <div
@@ -266,25 +273,48 @@ export default function Topbar({ page, setPage, onMenuClick }) {
                   : currentUser.name
                 : currentRole}
             </div>
-            <div style={{ fontSize: 9, color: 'var(--text-muted)' }}>
+            <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>
               {currentRole}
             </div>
           </div>
-          <button
-            onClick={handleLogout}
-            style={{
-              marginLeft: '8px',
-              padding: '4px 8px',
-              background: 'var(--navy-3)',
-              color: 'var(--text-secondary)',
-              border: '1px solid var(--border)',
-              borderRadius: 'var(--radius-sm)',
-              fontSize: '10px',
-              cursor: 'pointer',
-            }}
-          >
-            Logout
-          </button>
+          
+          {showProfileMenu && (
+            <div
+              style={{
+                position: 'absolute',
+                top: 44,
+                right: 0,
+                width: 160,
+                background: 'var(--navy-2)',
+                border: '1px solid var(--border-strong)',
+                borderRadius: 'var(--radius-md)',
+                padding: '8px 0',
+                boxShadow: 'var(--shadow-card)',
+                display: 'flex',
+                flexDirection: 'column',
+              }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <button
+                onClick={handleLogout}
+                style={{
+                  width: '100%',
+                  padding: '10px 16px',
+                  background: 'transparent',
+                  border: 'none',
+                  color: '#f87171',
+                  textAlign: 'left',
+                  cursor: 'pointer',
+                  fontSize: 12,
+                  fontWeight: 600,
+                }}
+                onMouseEnter={(e) => (e.currentTarget.style.background = 'rgba(248,113,113,0.1)')}
+                onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+              >
+                Logout
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </header>

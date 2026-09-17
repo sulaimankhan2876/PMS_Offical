@@ -51,7 +51,7 @@ export default function Dashboard({ setPage }) {
               'linear-gradient(135deg, var(--navy-3) 0%, var(--navy-4) 50%, var(--navy-3) 100%)',
             border: '1px solid var(--border-strong)',
             borderRadius: 'var(--radius-xl)',
-            padding: '24px 28px',
+            padding: '16px 20px',
             display: 'flex',
             alignItems: 'center',
             justifyItems: 'center',
@@ -94,16 +94,6 @@ export default function Dashboard({ setPage }) {
               >
                 Professor Model School Dargai
               </h2>
-              <p
-                style={{
-                  fontSize: 12,
-                  color: 'var(--text-secondary)',
-                  marginTop: 4,
-                }}
-              >
-                Faith · Unity · Discipline — Main Mardan Road, Manga Dargai,
-                Charsadda, KPK, Pakistan
-              </p>
               <div style={{ display: 'flex', gap: 8, marginTop: 10 }}>
                 {[
                   `AY 2025–26`,
@@ -126,27 +116,6 @@ export default function Dashboard({ setPage }) {
                   </span>
                 ))}
               </div>
-            </div>
-          </div>
-          <div style={{ textAlign: 'right', minWidth: 160 }}>
-            <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>
-              WhatsApp & Easypaisa
-            </div>
-            <div
-              style={{
-                fontFamily: 'Cinzel, serif',
-                fontSize: 16,
-                color: 'var(--gold)',
-                fontWeight: 700,
-                marginTop: 2,
-              }}
-            >
-              0313-9355501
-            </div>
-            <div
-              style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 2 }}
-            >
-              sulaimanpms855@gmail.com
             </div>
           </div>
         </div>
@@ -214,12 +183,18 @@ export default function Dashboard({ setPage }) {
               </Btn>
             }
           >
-            <MiniBar
-              data={monthData}
-              labels={monthNames}
-              color="var(--gold)"
-              height={90}
-            />
+            {monthData.reduce((a, b) => a + b, 0) === 0 ? (
+              <div style={{ textAlign: 'center', padding: '35px 0', color: 'var(--text-muted)' }}>
+                No data available for this period
+              </div>
+            ) : (
+              <MiniBar
+                data={monthData}
+                labels={monthNames}
+                color="var(--gold)"
+                height={90}
+              />
+            )}
             <div
               style={{
                 display: 'flex',
@@ -311,7 +286,7 @@ export default function Dashboard({ setPage }) {
                 </div>
                 <ProgressBar
                   value={paidFees}
-                  max={paidFees + totalExpenses}
+                  max={Math.max(paidFees + totalExpenses, 1)}
                   color="#4ade80"
                 />
               </div>
@@ -332,7 +307,7 @@ export default function Dashboard({ setPage }) {
                 </div>
                 <ProgressBar
                   value={totalExpenses}
-                  max={paidFees + totalExpenses}
+                  max={Math.max(paidFees + totalExpenses, 1)}
                   color="#f87171"
                 />
               </div>
@@ -388,25 +363,15 @@ export default function Dashboard({ setPage }) {
               <button
                 key={i}
                 onClick={() => setPage(q.page)}
+                className="card-3d"
                 style={{
-                  background: 'rgba(234,179,8,0.06)',
-                  border: '1px solid var(--border)',
                   borderRadius: 'var(--radius-md)',
                   padding: '14px 8px',
                   textAlign: 'center',
                   cursor: 'pointer',
-                  transition: 'var(--transition)',
                   fontFamily: "'DM Sans',sans-serif",
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.background = 'rgba(234,179,8,0.14)'
-                  e.currentTarget.style.borderColor = 'var(--border-strong)'
-                  e.currentTarget.style.transform = 'translateY(-2px)'
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.background = 'rgba(234,179,8,0.06)'
-                  e.currentTarget.style.borderColor = 'var(--border)'
-                  e.currentTarget.style.transform = 'translateY(0)'
+                  border: '1px solid rgba(234,179,8,0.15)',
+                  background: 'linear-gradient(145deg, rgba(15, 31, 61, 0.5), rgba(20, 40, 80, 0.3))',
                 }}
               >
                 <div style={{ fontSize: 22, marginBottom: 6 }}>{q.icon}</div>
