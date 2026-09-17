@@ -460,7 +460,7 @@ export function Teachers() {
 
 // ── CLASSES ────────────────────────────────────────────────────────────────
 export function Classes() {
-  const { classes, currentRole, addClass } = useDb()
+  const { classes, students, currentRole, addClass } = useDb()
   const [showAdd, setShowAdd] = useState(false)
   const [form, setForm] = useState({ name: '', strength: 20, capacity: 25 })
 
@@ -487,8 +487,7 @@ export function Classes() {
       >
         <div style={{ fontSize: 13, color: 'var(--text-secondary)' }}>
           {classes.length} classes ·{' '}
-          {classes.reduce((sum, c) => sum + c.strength, 0)} enrolled total
-          strength
+          {students.length} total enrolled students
         </div>
         {(currentRole === 'Super Admin' || currentRole === 'Principal') && (
           <Btn variant="primary" onClick={() => setShowAdd(true)}>
@@ -532,7 +531,8 @@ export function Classes() {
         }}
       >
         {classes.map((c, i) => {
-          const pct = Math.round((c.strength / c.capacity) * 100)
+          const actualStrength = students.filter(s => s.class === c.name).length
+          const pct = Math.round((actualStrength / c.capacity) * 100)
           return (
             <div
               key={i}
@@ -577,11 +577,11 @@ export function Classes() {
               >
                 <span>Sections: {c.sections?.join(', ') || 'A'}</span>
                 <span>
-                  {c.strength}/{c.capacity}
+                  {actualStrength}/{c.capacity}
                 </span>
               </div>
               <ProgressBar
-                value={c.strength}
+                value={actualStrength}
                 max={c.capacity}
                 color={pct > 90 ? '#f87171' : 'var(--gold)'}
               />
