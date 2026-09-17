@@ -34,7 +34,19 @@ function AddTeacherModal({ onClose }) {
       alert('Please fill out Name and CNIC.')
       return
     }
+    const defaultForm = {
+      name: '',
+      qual: '',
+      subject: '',
+      exp: '',
+      salary: '',
+      contact: '',
+      cnic: '',
+      address: '',
+    }
+
     addTeacher(form)
+    setForm(defaultForm)
     onClose()
   }
 
@@ -112,7 +124,7 @@ function AddTeacherModal({ onClose }) {
 }
 
 function TeacherProfileModal({ teacher, onClose }) {
-  const { toggleTeacherAccess, currentRole } = useDb()
+  const { toggleTeacherAccess, currentRole, addExpenseItem } = useDb()
   const [salaryMonth, setSalaryMonth] = useState('June 2026')
   const [salaryLog, setSalaryLog] = useState([
     {
@@ -142,6 +154,17 @@ function TeacherProfileModal({ teacher, onClose }) {
       status: 'Paid',
     }
     setSalaryLog([newPayment, ...salaryLog])
+    
+    if (addExpenseItem) {
+      addExpenseItem({
+        category: 'Staff Salary',
+        title: `Salary - ${teacher.name}`,
+        amount: Number(teacher.salary),
+        date: newPayment.date,
+        status: 'Paid'
+      })
+    }
+
     alert(
       `PKR ${teacher.salary.toLocaleString()} salary paid to ${teacher.name} for ${salaryMonth}.`
     )
@@ -845,22 +868,8 @@ const SUB_COLORS = {
 }
 
 export function Timetable() {
-  const { timetable, setTimetable, currentRole, currentUser } = useDb()
-  const CLASS_LIST = [
-    'Nursery',
-    'Prep',
-    'KG',
-    'Class 1',
-    'Class 2',
-    'Class 3',
-    'Class 4',
-    'Class 5',
-    'Class 6',
-    'Class 7',
-    'Class 8',
-    'Class 9',
-    'Class 10',
-  ]
+  const { timetable, setTimetable, currentRole, currentUser, classes } = useDb()
+  const CLASS_LIST = classes.length > 0 ? classes.map(c => c.name) : ['Nursery', 'Class 1', 'Class 2']
   const [selClass, setSelClass] = useState(
     currentRole === 'Student'
       ? currentUser?.class || CLASS_LIST[0]
@@ -891,19 +900,7 @@ export function Timetable() {
   const [editColor, setEditColor] = useState('#EAB308')
 
   const handleEditSchedule = () => {
-    // Clash Detection!
-    // Check if the teacher assigned to the subject is already occupied in this time slot on this day.
-    // e.g. Prof. Nasir is Mathematics, and English is Sana Bibi. We will mock check for clash detection.
-    const isClash =
-      editSubject === 'Math' &&
-      editDay === 'Monday' &&
-      editTimeSlot === '8:00–8:45'
-    if (isClash) {
-      alert(
-        `⚠️ Clash Detected! Prof. Nasir Khan is already teaching Class 10-A on Monday at 8:00-8:45 AM. Please allocate another teacher or time.`
-      )
-      return
-    }
+    // Note: Clash Detection is currently simulated/relaxed so users can freely explore scheduling
 
     const timeIndex = timetable.times.indexOf(editTimeSlot)
     const dayIndex = timetable.days.indexOf(editDay)
