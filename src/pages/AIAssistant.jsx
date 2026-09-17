@@ -20,213 +20,6 @@ const SUGGESTIONS = [
   { icon: '🏫', text: 'How many students are enrolled this year?' },
 ]
 
-// ── OFFLINE AI ENGINE ────────────────────────────────────────────────────
-function buildAIResponse(query, db) {
-  const q = query.toLowerCase().trim()
-  const {
-    students,
-    teachers,
-    feeRecords,
-    examResults,
-    homework,
-    books,
-    expenses,
-    announcements,
-  } = db
-
-  const paidFees = feeRecords
-    .filter((f) => f.status === 'Paid')
-    .reduce((s, f) => s + f.amount, 0)
-  const pendingStudents = feeRecords.filter((f) => f.status !== 'Paid')
-  const totalExpenses = expenses.reduce((s, e) => s + e.amount, 0)
-  const topStudents = [...examResults]
-    .sort((a, b) => b.total - a.total)
-    .slice(0, 5)
-  const lowAttendance = students.filter((s) => s.att < 75)
-
-  // ── Fee queries ──
-  if (
-    q.includes('defaulter') ||
-    q.includes('fee pending') ||
-    q.includes('unpaid')
-  ) {
-    return `**⚠️ Fee Defaulters — June 2026**\n\nThe following ${pendingStudents.length} students have unpaid invoices:\n\n${pendingStudents
-      .map(
-        (f, i) =>
-          `${i + 1}. **${f.name}** (${f.class}) — PKR ${f.amount.toLocaleString()} [${f.status}]`
-      )
-      .join(
-        '\n'
-      )}\n\n**Total Outstanding: PKR ${pendingStudents.reduce((s, f) => s + f.amount, 0).toLocaleString()}**\n\n📱 *Recommendation: Send WhatsApp reminders via the Parents → Notification panel.*`
-  }
-
-  if (
-    q.includes('fee collect') ||
-    (q.includes('fee') && (q.includes('collected') || q.includes('total')))
-  ) {
-    return `**💰 Fee Collection Summary — June 2026**\n\n- **Total Collected:** PKR ${paidFees.toLocaleString()}\n- **Total Pending:** PKR ${pendingStudents.reduce((s, f) => s + f.amount, 0).toLocaleString()}\n- **Paid Invoices:** ${feeRecords.filter((f) => f.status === 'Paid').length} of ${feeRecords.length}\n- **Collection Rate:** ${Math.round((feeRecords.filter((f) => f.status === 'Paid').length / Math.max(1, feeRecords.length)) * 100)}%\n\n**Total Operating Expenses:** PKR ${totalExpenses.toLocaleString()}\n**Net Surplus:** PKR ${(paidFees - totalExpenses).toLocaleString()}`
-  }
-
-  // ── Attendance queries ──
-  if (
-    q.includes('attendance') &&
-    (q.includes('report') || q.includes('today') || q.includes('show'))
-  ) {
-    const avgAtt = Math.round(
-      students.reduce((s, st) => s + st.att, 0) / Math.max(1, students.length)
-    )
-    return `**✅ Attendance Report — ${new Date().toLocaleDateString('en-PK', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}**\n\n- **School Average Attendance:** ${avgAtt}%\n- **Students Below 75%:** ${lowAttendance.length}\n\n**Low Attendance Alert:**\n${lowAttendance.map((s) => `⚠️ ${s.name} (${s.class}) — ${s.att}%`).join('\n') || 'All students have adequate attendance.'}\n\n📱 *To send parent alerts, go to Attendance → Notify Parents.*`
-  }
-
-  // ── Student stats ──
-  if (
-    q.includes('how many student') ||
-    q.includes('total student') ||
-    q.includes('enrolled')
-  ) {
-    const maleCount = students.filter((s) => s.gender === 'Male').length
-    const femaleCount = students.filter((s) => s.gender === 'Female').length
-    return `**🎓 Student Enrollment Summary**\n\n- **Total Students:** ${students.length}\n- **Male:** ${maleCount}\n- **Female:** ${femaleCount}\n- **Classes Covered:** Nursery to Class 10\n\n**By Grades:**\n${[
-      'Nursery',
-      'Prep',
-      'KG',
-      ...Array.from({ length: 10 }, (_, i) => `Class ${i + 1}`),
-    ]
-      .map((cls) => {
-        const count = students.filter((s) => s.class === cls).length
-        return count > 0 ? `- ${cls}: ${count} students` : null
-      })
-      .filter(Boolean)
-      .join('\n')}`
-  }
-
-  // ── Top performers ──
-  if (
-    q.includes('top performer') ||
-    q.includes('best student') ||
-    q.includes('rank')
-  ) {
-    return `**🏆 Top Academic Performers — Current Term**\n\n${topStudents
-      .map((r, i) => {
-        const medal =
-          i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `#${i + 1}`
-        return `${medal} **${r.student}** (${r.class})\n   Score: ${r.total}/${r.max} | ${Math.round((r.total / r.max) * 100)}% | Grade: **${r.grade}**`
-      })
-      .join('\n\n')}\n\n*Congratulations to all achievers! 🎉*`
-  }
-
-  // ── Math solver ──
-  if (q.includes('2x² + 5x - 3') || q.includes('2x^2 + 5x - 3')) {
-    return `**📐 Quadratic Equation Solution: 2x² + 5x - 3 = 0**\n\n**Method: Quadratic Formula**\nx = (-b ± √(b² - 4ac)) / 2a\n\nWhere: a = 2, b = 5, c = -3\n\n**Step 1:** Calculate discriminant\nD = b² - 4ac = 25 - 4(2)(-3) = 25 + 24 = **49**\n\n**Step 2:** Apply formula\nx = (-5 ± √49) / (2×2) = (-5 ± 7) / 4\n\n**Solution:**\n- x₁ = (-5 + 7) / 4 = **2/4 = 0.5**\n- x₂ = (-5 - 7) / 4 = **-12/4 = -3**\n\n✅ **Answers: x = 0.5 and x = -3**`
-  }
-
-  if (q.includes('2x+y=10') || q.includes('system of equation')) {
-    return `**🔢 System of Equations Solution**\n\nGiven:\n- Equation 1: 2x + y = 10\n- Equation 2: x - y = 2\n\n**Method: Addition / Elimination**\n\n**Step 1:** Add both equations:\n(2x + y) + (x - y) = 10 + 2\n3x = 12\n**x = 4**\n\n**Step 2:** Substitute x = 4 into Eq. 2:\n4 - y = 2\n**y = 2**\n\n✅ **Answer: x = 4, y = 2**\n\nVerification:\n- 2(4) + 2 = 10 ✅\n- 4 - 2 = 2 ✅`
-  }
-
-  // ── Character certificate ──
-  if (
-    q.includes('character certificate') ||
-    q.includes('bonafide') ||
-    q.includes('leaving certificate')
-  ) {
-    const studentName = q.includes('ahmad')
-      ? 'Ahmad Zaman Khan'
-      : '[Student Name]'
-    const studentId = q.includes('ahmad') ? 'PMS-2026-001' : '[Student ID]'
-    return `**📜 CHARACTER CERTIFICATE**\n\n---\n\n**Professor Model School Dargai**\nMain Mardan Road, Manga Dargai, Charsadda, KPK\n\n*Date: ${new Date().toLocaleDateString('en-PK', { day: '2-digit', month: 'long', year: 'numeric' })}*\n\n**To Whom It May Concern,**\n\nThis is to certify that **${studentName}** (Student ID: ${studentId}) is/was a bonafide student of Professor Model School Dargai.\n\nThe student has demonstrated excellent moral character, discipline, and academic conduct throughout their enrollment. They are known to be honest, sincere, and hardworking.\n\nThis certificate is issued on request for the purpose of further education / employment.\n\n**Issued by:**\nMuhammad Daud Khan\n*Owner & Principal*\nProfessor Model School Dargai\n📞 0313-9355501\n\n_Signature: _________________ [School Seal]_`
-  }
-
-  // ── Summer vacation notice ──
-  if (
-    q.includes('summer vacation') ||
-    q.includes('notice') ||
-    q.includes('announcement')
-  ) {
-    return `**📢 OFFICIAL NOTICE**\n\n---\n\n**Professor Model School Dargai**\n*Main Mardan Road, Manga Dargai, Charsadda, KPK*\n\n📅 **Date: ${new Date().toLocaleDateString('en-PK', { day: '2-digit', month: 'long', year: 'numeric' })}**\n\n**Subject: Summer Vacation Notice — AY 2025–2026**\n\nDear Parents & Students,\n\nThis is to inform all students and parents that the school will remain **CLOSED for Summer Vacations** from:\n\n📆 **June 15, 2026 to July 31, 2026**\n\nStudents are required to:\n1. Complete all assigned Summer Vacation Homework\n2. Upload completed tasks to the Student Portal (LMS)\n3. Report to school on August 1, 2026 with all assignments\n\nFor queries, contact: **0313-9355501** (WhatsApp/Easypaisa)\n\n**Muhammad Daud Khan**\n*Owner & Principal*\n*Professor Model School Dargai*`
-  }
-
-  // ── Urdu grammar ──
-  if (
-    q.includes('فعل') ||
-    q.includes('فاعل') ||
-    q.includes('urdu grammar') ||
-    q.includes('اردو')
-  ) {
-    return `**📜 اردو گرامر — فعل اور فاعل**\n\n**فاعل (Subject):** وہ اسم جو کسی کام کو انجام دے\nمثال: **علی** نے کھانا کھایا۔ (علی = فاعل)\n\n**فعل (Verb):** جملے میں کام یا حالت کو ظاہر کرے\nاقسام:\n1. **فعل لازم** — جسے مفعول کی ضرورت نہ ہو\n   مثال: پرندہ اُڑا۔\n2. **فعل متعدی** — جسے مفعول کی ضرورت ہو\n   مثال: احمد نے کتاب پڑھی۔\n3. **فعل مضارع** — حال یا مستقبل کا فعل\n   مثال: وہ لکھتا ہے۔\n4. **فعل ماضی** — گزرے وقت کا فعل\n   مثال: وہ گیا۔\n\n💡 *یاد رکھیں: جملے میں فاعل + فعل ضروری ہے!*`
-  }
-
-  // ── Photosynthesis ──
-  if (q.includes('photosynthesis')) {
-    return `**🌿 Photosynthesis — Simple Explanation**\n\nPhotosynthesis is the process by which plants make their own food using **sunlight, water, and carbon dioxide**.\n\n**Formula:**\n6CO₂ + 6H₂O + Sunlight → C₆H₁₂O₆ + 6O₂\n\n**Simple Steps:**\n1. 🌞 Plant absorbs **sunlight** through chlorophyll (green pigment)\n2. 💧 Plant absorbs **water** from soil through roots\n3. 💨 Plant takes **CO₂** from air through tiny holes called stomata\n4. ⚡ These combine to make **glucose (sugar)** for energy\n5. 🌬️ **Oxygen** is released as a by-product — which we breathe!\n\n**Important terms:**\n- **Chlorophyll:** Green pigment in leaves that captures sunlight\n- **Stomata:** Tiny pores on leaves for gas exchange\n- **Chloroplast:** The organelle where photosynthesis occurs\n\n✅ *This process is why plants are called Producers in food chains!*`
-  }
-
-  // ── Teacher info ──
-  if (
-    q.includes('teacher') &&
-    (q.includes('how many') || q.includes('staff') || q.includes('total'))
-  ) {
-    return `**👩‍🏫 School Staff Summary**\n\n- **Total Teaching Staff:** ${teachers.length}\n- **Active:** ${teachers.filter((t) => t.status === 'Active').length}\n- **On Leave:** ${teachers.filter((t) => t.status !== 'Active').length}\n\n**Subject Coverage:**\n${teachers.map((t) => `- ${t.name} → ${t.subject}`).join('\n')}\n\n**Total Monthly Payroll:** PKR ${teachers.reduce((s, t) => s + t.salary, 0).toLocaleString()}`
-  }
-
-  // ── Library status ──
-  if (q.includes('library') || q.includes('book')) {
-    const totalQty = books.reduce((s, b) => s + b.qty, 0)
-    const totalIssued = books.reduce((s, b) => s + b.issued, 0)
-    return `**📚 Library Status**\n\n- **Total Book Titles:** ${books.length}\n- **Total Volumes:** ${totalQty}\n- **Currently Issued:** ${totalIssued}\n- **Available Now:** ${totalQty - totalIssued}\n\n**Books in High Demand (All Issued):**\n${
-      books
-        .filter((b) => b.qty === b.issued)
-        .map((b) => `- "${b.title}" by ${b.author}`)
-        .join('\n') || 'None'
-    }`
-  }
-
-  // ── Pashto support ──
-  if (q.includes('pashto') || q.includes('پښتو')) {
-    return `**🗣️ Pashto Language Support — پښتو**\n\nSalam! (سلام) Hello!\nZe staso sara khushan yam (زه ستاسو سره خوشحال یم) — I am happy to help you!\n\n**Basic Pashto Grammar:**\n- Subject + Object + Verb order\n- Example: Ahmad (subject) kitab (book) lwali (reads)\n- احمد کتاب لولي\n\n**Common Pashto Words:**\n- ښوونکی (Shwoonkay) = Teacher\n- زده کوونکی (Zda kawoonkay) = Student\n- مکتب (Maktab) = School\n- درسي کتاب (Darsi Kitab) = Textbook\n\n📝 *For detailed Pashto lessons, please ask your Pashto teacher Ms. Razia Gul.*`
-  }
-
-  // ── Homework status ──
-  if (q.includes('homework') || q.includes('assignment')) {
-    return `**📋 Homework Status — Active Assignments**\n\n${homework
-      .slice(0, 5)
-      .map(
-        (h, i) =>
-          `${i + 1}. **${h.title}**\n   📚 ${h.subject} | 🏫 ${h.class} | 📅 Due: ${h.due}\n   ✅ Submitted: ${h.submitted || 0}/${h.total || 30} (${Math.round(((h.submitted || 0) / (h.total || 30)) * 100)}%)`
-      )
-      .join('\n\n')}`
-  }
-
-  if (
-    q.includes('hi') ||
-    q.includes('hello') ||
-    q.includes('salam') ||
-    q.includes('hey')
-  ) {
-    return `**🤖 PMS AI Assistant — Wa Alaikum Assalam!**\n\nI'm your intelligent school assistant. How can I help you today? You can ask me to solve math problems, explain science concepts, or help with school tasks.`
-  }
-
-  // ── Default comprehensive response ──
-  const topics = [
-    'attendance',
-    'fees',
-    'results',
-    'homework',
-    'library',
-    'math',
-    'science',
-    'urdu',
-    'english',
-    'pashto',
-    'notices',
-    'certificates',
-  ]
-  return `I'm sorry, I couldn't find a direct answer to that specific query. I am an offline AI assistant and my capabilities are focused on school-related tasks.\n\n💡 **Try asking me about:**\n${topics
-    .map((t) => `- ${t.charAt(0).toUpperCase() + t.slice(1)}`)
-    .slice(0, 6)
-    .join('\n')}\n\nOr use the **Quick Prompts** on the right panel!`
-}
-
 // ── AI ASSISTANT COMPONENT ─────────────────────────────────────────────────
 export default function AIAssistant() {
   const db = useDb()
@@ -235,7 +28,7 @@ export default function AIAssistant() {
   const [messages, setMessages] = useState([
     {
       role: 'assistant',
-      content: `**Assalam-o-Alaikum! 👋 Welcome to PMS AI Assistant**\n\nI'm your intelligent school assistant for **Professor Model School Dargai**. I have live access to the school database and can help you with:\n\n🎓 **Academic Support** — Math, Science, Urdu, Pashto, English, Islamic Studies\n📊 **School Analytics** — Live attendance, fee reports, result analysis\n📝 **Document Generation** — Notices, certificates, letters, character certificates\n🤖 **AI Insights** — Student performance, defaulter lists, homework status\n\nI'm running **offline with live database access** — no internet needed! Select a quick prompt or type your question.\n\n*Available 24/7 for students, teachers, and administrators.*`,
+      content: `**Assalam-o-Alaikum! 👋 Welcome to PMS AI Assistant**\n\nI'm your intelligent school assistant for **Professor Model School Dargai**. I have live access to the school database and can help you with:\n\n🎓 **Academic Support** — Math, Science, Urdu, Pashto, English, Islamic Studies\n📊 **School Analytics** — Live attendance, fee reports, result analysis\n📝 **Document Generation** — Notices, certificates, letters, character certificates\n🤖 **AI Insights** — Student performance, defaulter lists, homework status\n\nI am powered by Google Gemini AI! Select a quick prompt or type your question.\n\n*Available 24/7 for students, teachers, and administrators.*`,
     },
   ])
   const [apiKey, setApiKey] = useState(() => localStorage.getItem('pms_gemini_key') || ENV_API_KEY || DEFAULT_KEY)
@@ -289,12 +82,10 @@ Answer the user's query intelligently. Use markdown formatting like bolding and 
       setMessages((prev) => [...prev, { role: 'assistant', content: reply }])
     } catch (error) {
       console.error('Gemini API Error:', error)
-      const fallbackMsg = `**⚠️ AI is running in Offline Mode**\n\nThe Gemini AI failed to respond (Error: ${error.message || 'Unknown'}). If your API key is invalid, click the ⚙️ Settings icon to update it.\n\n*Falling back to offline data...*\n\n`
-      // Fallback to local offline engine if API fails
-      const offlineReply = fallbackMsg + buildAIResponse(msg, db)
+      const fallbackMsg = `**⚠️ AI Error Encountered**\n\nThe Gemini AI failed to respond (Error: ${error.message || 'Unknown'}).\n\nIf your API key is invalid, please click the ⚙️ Settings icon to update it with a valid Gemini API Key from Google AI Studio.\n`
       setMessages((prev) => [
         ...prev,
-        { role: 'assistant', content: offlineReply },
+        { role: 'assistant', content: fallbackMsg },
       ])
     } finally {
       setLoading(false)
@@ -385,7 +176,7 @@ Answer the user's query intelligently. Use markdown formatting like bolding and 
                 }}
               />
               <span style={{ fontSize: 11, color: apiKey ? '#4ade80' : '#f59e0b' }}>
-                {apiKey ? 'Online AI Active' : 'Offline Mode (Setup API Key)'}
+                {apiKey ? 'Online AI Active' : 'Setup API Key Required'}
               </span>
             </div>
           </div>
