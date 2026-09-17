@@ -14,26 +14,11 @@ import {
 } from '../components/ui.jsx'
 import { useDb } from '../context/DbContext.jsx'
 
-const CLASS_OPTIONS = [
-  'All Classes',
-  'Nursery',
-  'Prep',
-  'KG',
-  'Class 1',
-  'Class 2',
-  'Class 3',
-  'Class 4',
-  'Class 5',
-  'Class 6',
-  'Class 7',
-  'Class 8',
-  'Class 9',
-  'Class 10',
-]
 const SECTION_OPTIONS = ['A', 'B', 'C']
 
 function AddStudentModal({ onClose }) {
-  const { addStudent } = useDb()
+  const { addStudent, classes } = useDb()
+  const classList = classes ? classes.map(c => c.name) : []
   const [form, setForm] = useState({
     name: '',
     father: '',
@@ -125,7 +110,7 @@ function AddStudentModal({ onClose }) {
           type="select"
           value={form.class}
           onChange={set('class')}
-          options={CLASS_OPTIONS.slice(1)}
+          options={classList}
         />
         <Input
           label="Section"
@@ -230,8 +215,9 @@ function AddStudentModal({ onClose }) {
 }
 
 function StudentDetailModal({ student, onClose }) {
-  const { promoteStudent, currentRole, toggleStudentAccess, feeRecords } =
+  const { promoteStudent, currentRole, toggleStudentAccess, feeRecords, classes } =
     useDb()
+  const classList = classes ? classes.map(c => c.name) : []
   const [showPromote, setShowPromote] = useState(false)
   const [pClass, setPClass] = useState(student.class)
   const [pSection, setPSection] = useState(student.section)
@@ -578,7 +564,7 @@ function StudentDetailModal({ student, onClose }) {
               type="select"
               value={pClass}
               onChange={(e) => setPClass(e.target.value)}
-              options={CLASS_OPTIONS.slice(1)}
+              options={classList}
             />
             <Input
               label="Target Section"
@@ -781,7 +767,8 @@ function StudentDetailModal({ student, onClose }) {
 }
 
 export default function Students() {
-  const { students, deleteStudent, currentRole } = useDb()
+  const { students, deleteStudent, currentRole, classes } = useDb()
+  const classListWithAll = ['All Classes', ...(classes ? classes.map(c => c.name) : [])]
   const [search, setSearch] = useState('')
   const [classFilter, setClassFilter] = useState('All Classes')
   const [showAdd, setShowAdd] = useState(false)
@@ -971,7 +958,7 @@ export default function Students() {
             cursor: 'pointer',
           }}
         >
-          {CLASS_OPTIONS.map((c) => (
+          {classListWithAll.map((c) => (
             <option key={c}>{c}</option>
           ))}
         </select>
