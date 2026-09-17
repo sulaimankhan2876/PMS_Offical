@@ -606,26 +606,50 @@ export function Classes() {
 export function Subjects() {
   const { subjects, addSubject, deleteSubject, currentRole } = useDb()
   const [showAdd, setShowAdd] = useState(false)
-  const [form, setForm] = useState({
+  const defaultForm = {
     name: '',
     code: '',
     classes: '1–10',
     color: '#EAB308',
     icon: '📚',
-  })
+  }
+  const [form, setForm] = useState(defaultForm)
 
   const handleSave = () => {
-    if (!form.name || !form.code) return
+    if (!form.name || !form.code) {
+      alert('Please provide a name and subject code.')
+      return
+    }
     addSubject(form)
     setShowAdd(false)
+    setForm(defaultForm) // reset form
     alert('Subject added!')
   }
+
+  const handleOpenAdd = () => {
+    setForm(defaultForm)
+    setShowAdd(true)
+  }
+
+  const colorOptions = [
+    { label: 'Gold', value: '#EAB308' },
+    { label: 'Blue', value: '#3B82F6' },
+    { label: 'Red', value: '#EF4444' },
+    { label: 'Green', value: '#22C55E' },
+    { label: 'Purple', value: '#A855F7' },
+    { label: 'Orange', value: '#F97316' },
+    { label: 'Pink', value: '#EC4899' },
+  ]
+
+  const iconOptions = [
+    '📚', '🧪', '🔢', '💻', '🌍', '🎨', '⚽', '🗣️', '🕌', '📖', '🔬', '📐'
+  ]
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
       {(currentRole === 'Super Admin' || currentRole === 'Principal') && (
         <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-          <Btn variant="primary" onClick={() => setShowAdd(true)}>
+          <Btn variant="primary" onClick={handleOpenAdd}>
             + Add Subject
           </Btn>
         </div>
@@ -656,7 +680,59 @@ export function Subjects() {
               onChange={(e) => setForm({ ...form, classes: e.target.value })}
               placeholder="e.g. 9–10"
             />
-            <Btn variant="primary" onClick={handleSave}>
+            
+            <div style={{ display: 'flex', gap: 10 }}>
+              <div style={{ flex: 1 }}>
+                <label style={{ fontSize: 10, fontWeight: 600, color: 'var(--gold-dim)', textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: 5, display: 'block' }}>Theme Color</label>
+                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                  {colorOptions.map((c) => (
+                    <button
+                      key={c.value}
+                      onClick={() => setForm({ ...form, color: c.value })}
+                      style={{
+                        width: 24,
+                        height: 24,
+                        borderRadius: '50%',
+                        background: c.value,
+                        border: form.color === c.value ? '2px solid white' : '2px solid transparent',
+                        cursor: 'pointer',
+                        padding: 0
+                      }}
+                      title={c.label}
+                    />
+                  ))}
+                </div>
+              </div>
+              <div style={{ flex: 1 }}>
+                <label style={{ fontSize: 10, fontWeight: 600, color: 'var(--gold-dim)', textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: 5, display: 'block' }}>Icon</label>
+                <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                  {iconOptions.map((ico) => (
+                    <button
+                      key={ico}
+                      onClick={() => setForm({ ...form, icon: ico })}
+                      style={{
+                        width: 28,
+                        height: 28,
+                        borderRadius: 6,
+                        background: form.icon === ico ? 'var(--gold)' : 'var(--navy)',
+                        border: '1px solid var(--border)',
+                        color: form.icon === ico ? '#000' : '#fff',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: 14,
+                        padding: 0
+                      }}
+                    >
+                      {ico}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <Btn variant="primary" onClick={handleSave} style={{ marginTop: 10 }}>
               Save Subject
             </Btn>
           </div>
