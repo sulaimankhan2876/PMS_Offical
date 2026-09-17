@@ -13,6 +13,7 @@ import {
   CLASSES_DATA,
   TIMETABLE_DATA,
 } from '../utils/data.js'
+import databaseJson from '../../database.json'
 
 const DbContext = createContext()
 
@@ -29,19 +30,19 @@ export function DbProvider({ children }) {
 
   // State definitions
   const [students, setStudents] = useState(() =>
-    getLocal('pms_v2_students', STUDENTS)
+    getLocal('pms_v2_students', databaseJson.students || STUDENTS)
   )
   const [teachers, setTeachers] = useState(() =>
-    getLocal('pms_v2_teachers', TEACHERS)
+    getLocal('pms_v2_teachers', databaseJson.teachers || TEACHERS)
   )
   const [subjects, setSubjects] = useState(() =>
-    getLocal('pms_v2_subjects', SUBJECTS)
+    getLocal('pms_v2_subjects', databaseJson.subjects || SUBJECTS)
   )
   const [classes, setClasses] = useState(() =>
-    getLocal('pms_v2_classes', CLASSES_DATA)
+    getLocal('pms_v2_classes', databaseJson.classes || CLASSES_DATA)
   )
   const [timetable, setTimetable] = useState(() => {
-    const data = getLocal('pms_v2_timetable', TIMETABLE_DATA)
+    const data = getLocal('pms_v2_timetable', databaseJson.timetable || TIMETABLE_DATA)
     if (!data.classSlots) {
       data.classSlots = {}
       // Optional migration: move old slots to a default class if they existed
@@ -53,25 +54,25 @@ export function DbProvider({ children }) {
     return data
   })
   const [feeRecords, setFeeRecords] = useState(() =>
-    getLocal('pms_v2_fee_records', FEE_RECORDS)
+    getLocal('pms_v2_fee_records', databaseJson.feeRecords || FEE_RECORDS)
   )
   const [examResults, setExamResults] = useState(() =>
-    getLocal('pms_v2_exam_results', EXAM_RESULTS)
+    getLocal('pms_v2_exam_results', databaseJson.examResults || EXAM_RESULTS)
   )
   const [announcements, setAnnouncements] = useState(() =>
-    getLocal('pms_v2_announcements', ANNOUNCEMENTS)
+    getLocal('pms_v2_announcements', databaseJson.announcements || ANNOUNCEMENTS)
   )
-  const [books, setBooks] = useState(() => getLocal('pms_v2_books', BOOKS))
+  const [books, setBooks] = useState(() => getLocal('pms_v2_books', databaseJson.books || BOOKS))
   const [homework, setHomework] = useState(() =>
-    getLocal('pms_v2_homework', HOMEWORK)
+    getLocal('pms_v2_homework', databaseJson.homework || HOMEWORK)
   )
   const [lmsCourses, setLmsCourses] = useState(() => {
-    const data = getLocal('pms_v2_lms_courses', null)
+    const data = getLocal('pms_v2_lms_courses', databaseJson.lmsCourses || null)
     if (!data || data.length === 0) return LMS_COURSES
     return data
   })
   const [expenses, setExpenses] = useState(() =>
-    getLocal('pms_v2_expenses', EXPENSES)
+    getLocal('pms_v2_expenses', databaseJson.expenses || EXPENSES)
   )
   const [examConfig, setExamConfig] = useState(() => {
     const data = getLocal('pms_v2_exam_config', null)
@@ -98,29 +99,29 @@ export function DbProvider({ children }) {
 
   // New modules: Complaints, Visitors, Online payments, System Logs
   const [complaints, setComplaints] = useState(() =>
-    getLocal('pms_v2_complaints', [])
+    getLocal('pms_v2_complaints', databaseJson.complaints || [])
   )
   const [visitors, setVisitors] = useState(() =>
-    getLocal('pms_v2_visitors', [])
+    getLocal('pms_v2_visitors', databaseJson.visitors || [])
   )
   const [onlinePayments, setOnlinePayments] = useState(() =>
-    getLocal('pms_v2_online_payments', [])
+    getLocal('pms_v2_online_payments', databaseJson.onlinePayments || [])
   )
 
   const [attendance, setAttendance] = useState(() =>
-    getLocal('pms_v2_attendance', {})
+    getLocal('pms_v2_attendance', databaseJson.attendance || {})
   ) // date -> studentId -> status
 
   // System Audit Logs
   const [auditLogs, setAuditLogs] = useState(() =>
-    getLocal('pms_v2_audit_logs', [])
+    getLocal('pms_v2_audit_logs', databaseJson.auditLogs || [])
   )
   const [announcedResults, setAnnouncedResults] = useState(() =>
-    getLocal('pms_v2_announced_results', [])
+    getLocal('pms_v2_announced_results', databaseJson.announcedResults || [])
   )
 
   const [liveClasses, setLiveClasses] = useState(() =>
-    getLocal('pms_v2_live_classes', [])
+    getLocal('pms_v2_live_classes', databaseJson.liveClasses || [])
   )
 
   // Active Role and Profile
